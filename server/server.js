@@ -1,22 +1,26 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './server/config/db.js';
+import connectDB from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 connectDB();
 
 const app = express();
 
-// Core middleware
 app.use(cors());
 app.use(express.json());
 
-// Health check route — confirms the API is alive
 app.get('/api/health', (req, res) => {
-  res.json('health');
+  res.json({ status: 'ok', message: 'FlowTask API is running' });
 });
 
+app.use('/api/auth', authRoutes);
+
+// Placeholder route groups — will be wired up as features are built
+// app.use('/api/projects', projectRoutes); // Day 5
+// app.use('/api/tasks', taskRoutes);        // Day 6
 
 const PORT = process.env.PORT || 5000;
 
