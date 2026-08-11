@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -17,10 +18,9 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
 
-// Placeholder route groups — will be wired up as features are built
-// app.use('/api/projects', projectRoutes); // Day 5
-// app.use('/api/tasks', taskRoutes);        // Day 6
+// app.use('/api/tasks', taskRoutes); // Day 6
 
 const PORT = process.env.PORT || 5000;
 
