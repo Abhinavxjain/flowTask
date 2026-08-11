@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -19,8 +20,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
-
-// app.use('/api/tasks', taskRoutes); // Day 6
+app.use('/api/tasks', taskRoutes);
 
 const PORT = process.env.PORT || 5000;
 
