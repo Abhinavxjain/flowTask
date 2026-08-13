@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <h1>Dashboard — Coming Soon (Day 9)</h1>
+                <Dashboard />
               </ProtectedRoute>
             }
           />
