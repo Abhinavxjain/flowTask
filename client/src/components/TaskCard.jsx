@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
+import TaskComments from './TaskComments';
 
 const priorityColors = {
   low: '#4caf50',
@@ -7,6 +9,8 @@ const priorityColors = {
 };
 
 const TaskCard = ({ task, index, onDelete }) => {
+  const [showComments, setShowComments] = useState(false);
+
   return (
     <Draggable draggableId={task._id} index={index}>
       {(provided, snapshot) => (
@@ -54,6 +58,15 @@ const TaskCard = ({ task, index, onDelete }) => {
               </span>
             )}
           </div>
+
+          <button
+            onClick={() => setShowComments(!showComments)}
+            style={{ marginTop: '8px', fontSize: '12px', border: 'none', background: 'none', color: '#2196f3', cursor: 'pointer' }}
+          >
+            {showComments ? 'Hide comments' : 'Show comments'}
+          </button>
+
+          {showComments && <TaskComments taskId={task._id} />}
         </div>
       )}
     </Draggable>
