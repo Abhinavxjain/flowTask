@@ -1,7 +1,8 @@
 import API from './api';
 
-export const getTasks = async (projectId) => {
-  const res = await API.get(`/tasks?project=${projectId}`);
+export const getTasks = async (projectId, filters = {}) => {
+  const params = new URLSearchParams({ project: projectId, ...filters });
+  const res = await API.get(`/tasks?${params}`);
   return res.data;
 };
 

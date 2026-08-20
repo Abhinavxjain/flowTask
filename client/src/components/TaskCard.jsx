@@ -1,76 +1,53 @@
-import { useState } from 'react';
-import { Draggable } from '@hello-pangea/dnd';
-import TaskComments from './TaskComments';
+// GET /api/tasks?project=<id>&status=&priority=&search=&page=&limit=
+export const getTasks = async (req, res) => {
+  try {
+    const { project, status, priority, search, page = 1, limit = 10 } = req.query;
 
-const priorityColors = {
-  low: '#4caf50',
-  medium: '#ff9800',
-  high: '#f44336',
+    if (!project) {
+      return res.status(400).json({ message: 'Project query param is required' });
+    }
+
+    const projectDoc = await Project.findById(project);
+    if (!projectDoc) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!isProjectMember(projectDoc, req.user._id)) {
+      return res.status(403).json({ message: 'Not authorized for this project' });
+    }
+
+    // Build the filter object dynamically based on what was provided
+    const filter = { project };
+
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' };
+    }
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [tasks, totalCount] = await Promise.all([
+      Task.find(filter)
+        .populate('assignedTo', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Task.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      tasks,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalCount / limitNum),
+        totalCount,
+        limit: limitNum,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
-
-const TaskCard = ({ task, index, onDelete }) => {
-  const [showComments, setShowComments] = useState(false);
-
-  return (
-    <Draggable draggableId={task._id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          style={{
-            border: '1px solid #ddd',
-            borderRadius: '6px',
-            padding: '12px',
-            marginBottom: '10px',
-            background: snapshot.isDragging ? '#e3f2fd' : '#fff',
-            ...provided.draggableProps.style,
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <h4 style={{ margin: 0 }}>{task.title}</h4>
-            <button
-              onClick={() => onDelete(task._id)}
-              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#999' }}
-            >
-              ✕
-            </button>
-          </div>
-
-          {task.description && (
-            <p style={{ margin: '6px 0', fontSize: '14px', color: '#666' }}>{task.description}</p>
-          )}
-
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', fontSize: '12px' }}>
-            <span
-              style={{
-                background: priorityColors[task.priority] || '#999',
-                color: '#fff',
-                padding: '2px 8px',
-                borderRadius: '10px',
-              }}
-            >
-              {task.priority}
-            </span>
-            {task.dueDate && (
-              <span style={{ color: '#999' }}>
-                Due: {new Date(task.dueDate).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-
-          <button
-            onClick={() => setShowComments(!showComments)}
-            style={{ marginTop: '8px', fontSize: '12px', border: 'none', background: 'none', color: '#2196f3', cursor: 'pointer' }}
-          >
-            {showComments ? 'Hide comments' : 'Show comments'}
-          </button>
-
-          {showComments && <TaskComments taskId={task._id} />}
-        </div>
-      )}
-    </Draggable>
-  );
-};
-
-export default TaskCard;
